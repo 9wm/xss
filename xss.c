@@ -15,16 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #include <X11/Xlib.h>
-#include <X11/Xatom.h>
 #include <X11/extensions/scrnsaver.h>
+
+#include "obj.h"
 
 int child = 0;
 
@@ -39,30 +38,22 @@ int
 main(int argc, char *argv[])
 {
   Display *display = NULL;
-  char    *errtxt  = "bummer dude.";
-  Pixmap   blank;
-  int      ss_event, ss_error;
-  Window   root;
-  XEvent   event;
 
   if (argc < 2) {
     fprintf(stderr, "Usage: %s PROGRAM [ARGUMENT ...]\n", argv[0]);
-    exit(1);
+    return 64;                  /* EX_USAGE */
   }
   signal(SIGCHLD, sigchld);
 
-  do {
-    display = XOpenDisplay(NULL);
-    if (! display) {
-      errtxt = "Cannot open display";
-      break;
-    }
-    root = DefaultRootWindow(display);
+  try {
+    int    ss_event, ss_error;
+    XEvent event;
+
+    if (! (display = XOpenDisplay(NULL))) raise("cannot open display");
     if (! XScreenSaverQueryExtension(display, &ss_event, &ss_error)) {
-      errtxt = "X server does not support MIT-SCREEN-SAVER extension.";
-      break;
+      raise("X server does not support MIT-SCREEN-SAVER extension.");
     }
-    XScreenSaverSelectInput(display, root, ScreenSaverNotifyMask);
+    XScreenSaverSelectInput(display, DefaultRootWindow(display), ScreenSaverNotifyMask);
     while (! XNextEvent(display, &event)) {
       if (event.type == ss_event) {
         XScreenSaverNotifyEvent *sevent = (XScreenSaverNotifyEvent *)&event;
@@ -79,16 +70,15 @@ main(int argc, char *argv[])
         }
       }
     }
-    errtxt = NULL;
   } while (0);
 
   if (display) {
-    (void)XFreePixmap(display, blank);
     (void)XCloseDisplay(display);
   }
-  if (errtxt) {
-    fprintf(stderr, "Error: %s\n", errtxt);
-    return 1;
+
+  except {
+    fprintf(stderr, "Error: %s\n", exception);
+    return 69;                  /* EX_UNAVAILABLE */
   }
 
   return 0;

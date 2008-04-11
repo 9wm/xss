@@ -1,0 +1,53 @@
+== xss ==
+
+xss uses the nearly 20-year-old MIT-SCREEN-SAVER extension to launch a
+program when the X server turns on the built-in screen saver.
+
+xsswin makes a full-screen black window and runs some other program,
+passing along the window ID in the environment ($XSS_WINDOW) and
+possibly as an argument (XSS_WINDOW gets replaced with the id).
+
+
+Examples
+--------
+
+Tell the X server to launch the screen saver after 90 seconds idle:
+
+    xset s 90
+
+
+Run like xautolock:
+
+    xss xlock -mode qix &
+
+
+Run like xscreensaver (no locking):
+
+    xss xsswin /usr/lib/xscreensaver/flurry -window-id XSS_WINDOW
+
+
+Shell script to run an xscreensaver hack and xtrlock at the same time:
+
+    #! /bin/sh
+    xsswin /usr/lib/xscreensaver/qix -window-id XSS_WINDOW &
+    pid=$!
+    xtrlock
+    kill $pid
+
+
+History
+-------
+
+AIX apparently had something also called `xss` which did almost exactly
+what my xss does, but had some command-line options.
+
+I'm not aware of anything else like `xsswin`.
+
+I lifted some code from `beforelight` from the X11 distribution, and
+from `slock` from [suckless.org](http://suckless.org/).  Both have a
+BSD/X11-like license.
+
+
+------
+
+Neale Pickett <neale@woozle.org>

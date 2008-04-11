@@ -1,4 +1,6 @@
 CFLAGS = -Wall
-LDLIBS = -lX11 -lXss
+LDLIBS = -lX11
 
-all: xss
+all: xss xsswin
+
+xss: LDLIBS += -lXss
