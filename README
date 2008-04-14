@@ -1,13 +1,16 @@
 == xss ==
 
-xss uses the nearly 20-year-old MIT-SCREEN-SAVER extension to launch a
+`xss` uses the nearly 20-year-old MIT-SCREEN-SAVER extension to launch a
 program when the X server turns on the built-in screen saver.
 
-xsswin makes a full-screen black window and runs some other program,
+`xsswin` makes a full-screen black window and runs some other program,
 passing along the window ID in the environment ($XSS_WINDOW) and
-possibly as an argument (XSS_WINDOW gets replaced with the id).
+possibly as an argument (XSS_WINDOW gets replaced with the id).  It does
+not grab keyboard or mouse focus: you'll have to run something else
+(like `xtrlock`) to do this or other windows will continue to get
+keyboard and mouse events.
 
-xcursorpos prints out the x and y coordinates of the cursor.
+`xcursorpos` prints out the x and y coordinates of the cursor.
 
 Examples
 --------
@@ -17,18 +20,13 @@ Tell the X server to launch the screen saver after 90 seconds idle:
     xset s 90
 
 
-Run like xautolock:
+Run like `xautolock`:
 
     xss xlock -mode qix &
 
 
-Run like xscreensaver (no locking):
-
-    xss xsswin /usr/lib/xscreensaver/flurry -window-id XSS_WINDOW
-
-
-Shell script to run an xscreensaver hack and xtrlock at the same time,
-but prevent locking if the cursor is in the upper-left corner:
+Shell script to run an `xscreensaver` hack and `xtrlock` at the same
+time, but prevent locking if the cursor is in the upper-left corner:
 
     #! /bin/sh
     
@@ -43,9 +41,11 @@ History
 -------
 
 AIX apparently had something also called `xss` which did almost exactly
-what my xss does, but had some command-line options.
+what mine does, but with command-line options.
 
-I'm not aware of anything else like `xsswin`.
+I'm not aware of anything else like `xsswin` or `xcursorpos`.  If there
+is already something out there to do these jobs please let me know so I
+can quit using my versions.
 
 I lifted some code from `beforelight` from the X11 distribution, and
 from `slock` from [suckless.org](http://suckless.org/).  Both have a

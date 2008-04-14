@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 /** Exception-type things.  Don't nest them.
  *
@@ -19,6 +20,7 @@
 static char *exception;
 #define try for (exception = "Failure"; exception; exception = NULL)
 #define fail break
+#define pfail {exception = strerror(errno); break;}
 #define succeed continue
 #define raise(x) {exception = x; break;}
 #define except if (exception)

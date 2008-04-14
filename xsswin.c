@@ -27,7 +27,6 @@ int
 main(int argc, char * const argv[])
 {
   Display *display;
-  Cursor   invisible;
   Pixmap   pmap;
   Window   w;
 
@@ -38,6 +37,7 @@ main(int argc, char * const argv[])
 
   try {
     int                  screen;
+    Cursor               invisible;
     XSetWindowAttributes wa;
     Window               root;
     XColor               black;
