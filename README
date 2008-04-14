@@ -7,6 +7,7 @@ xsswin makes a full-screen black window and runs some other program,
 passing along the window ID in the environment ($XSS_WINDOW) and
 possibly as an argument (XSS_WINDOW gets replaced with the id).
 
+xcursorpos prints out the x and y coordinates of the cursor.
 
 Examples
 --------
@@ -26,9 +27,12 @@ Run like xscreensaver (no locking):
     xss xsswin /usr/lib/xscreensaver/flurry -window-id XSS_WINDOW
 
 
-Shell script to run an xscreensaver hack and xtrlock at the same time:
+Shell script to run an xscreensaver hack and xtrlock at the same time,
+but prevent locking if the cursor is in the upper-left corner:
 
     #! /bin/sh
+    
+    xcursorpos | (read x y; [ $x -lt 20 -a $y -lt 20 ]) && exit 0
     xsswin /usr/lib/xscreensaver/qix -window-id XSS_WINDOW &
     pid=$!
     xtrlock
