@@ -74,7 +74,7 @@ main(int argc, char * const argv[])
     }
   }
   if ((Window)-1 == w) {
-    fprintf(stderr, "Usage: %s [WINDOW_ID]\n", argv[0]);
+    (void)fprintf(stderr, "Usage: %s [WINDOW_ID]\n", argv[0]);
     return 64;                /* EX_USAGE */
   }
 
@@ -188,7 +188,7 @@ main(int argc, char * const argv[])
   }
 
   except {
-    fprintf(stderr, "Error: %s\n", exception);
+    (void)fprintf(stderr, "Error: %s\n", exception);
     return 69;                  /* EX_UNAVAILABLE */
   }
   return 0;

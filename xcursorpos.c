@@ -25,7 +25,7 @@ main(int argc, char *argv[])
   Display *display = NULL;
 
   if (argc != 1) {
-    fprintf(stderr, "Usage: %s\n", argv[0]);
+    (void)fprintf(stderr, "Usage: %s\n", argv[0]);
     return 64;                  /* EX_USAGE */
   }
 
@@ -39,7 +39,7 @@ main(int argc, char *argv[])
     if (! XQueryPointer(display, root, &root, &win, &x, &y, &win_x, &win_y, &mask)) {
       raise("unable to query pointer");
     }
-    printf("%d %d\n", x, y);
+    (void)printf("%d %d\n", x, y);
   } while (0);
 
   if (display) {
@@ -47,7 +47,7 @@ main(int argc, char *argv[])
   }
 
   except {
-    fprintf(stderr, "Error: %s\n", exception);
+    (void)fprintf(stderr, "Error: %s\n", exception);
     return 69;                  /* EX_UNAVAILABLE */
   }
 

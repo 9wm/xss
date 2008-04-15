@@ -40,7 +40,7 @@ main(int argc, char *argv[])
   Display *display = NULL;
 
   if (argc < 2) {
-    fprintf(stderr, "Usage: %s PROGRAM [ARGUMENT ...]\n", argv[0]);
+    (void)fprintf(stderr, "Usage: %s PROGRAM [ARGUMENT ...]\n", argv[0]);
     return 64;                  /* EX_USAGE */
   }
   signal(SIGCHLD, sigchld);
@@ -55,7 +55,7 @@ main(int argc, char *argv[])
     }
     XScreenSaverSelectInput(display, DefaultRootWindow(display), ScreenSaverNotifyMask);
     while (! XNextEvent(display, &event)) {
-      if (event.type == ss_event) {
+      if (ss_event == event.type) {
         XScreenSaverNotifyEvent *sevent = (XScreenSaverNotifyEvent *)&event;
 
         if (ScreenSaverOn == sevent->state) {
@@ -77,7 +77,7 @@ main(int argc, char *argv[])
   }
 
   except {
-    fprintf(stderr, "Error: %s\n", exception);
+    (void)fprintf(stderr, "Error: %s\n", exception);
     return 69;                  /* EX_UNAVAILABLE */
   }
 
