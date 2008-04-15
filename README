@@ -12,6 +12,9 @@ keyboard and mouse events.
 
 `xcursorpos` prints out the x and y coordinates of the cursor.
 
+`magic` is a reimplementation of the "magic" screen saver from After
+Dark.
+
 Examples
 --------
 
@@ -25,13 +28,13 @@ Run like `xautolock`:
     xss xlock -mode qix &
 
 
-Shell script to run an `xscreensaver` hack and `xtrlock` at the same
-time, but prevent locking if the cursor is in the upper-left corner:
+Shell script to run `magic` and `xtrlock` at the same time, but prevent
+locking if the cursor is in the upper-left corner:
 
     #! /bin/sh
     
     xcursorpos | (read x y; [ $x -lt 20 -a $y -lt 20 ]) && exit 0
-    xsswin /usr/lib/xscreensaver/qix -window-id XSS_WINDOW &
+    xsswin magic XSS_WINDOW &
     pid=$!
     xtrlock
     kill $pid
