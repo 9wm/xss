@@ -43,12 +43,14 @@ main(int argc, char *argv[])
 
     if (! (display = XOpenDisplay(NULL))) raise("cannot open display");
     root = DefaultRootWindow(display);
+    (void)XUngrabPointer(display, CurrentTime);
     if (GrabSuccess != XGrabPointer(display, root,
                                     False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
                                     GrabModeAsync, GrabModeAsync,
                                     None, None, CurrentTime)) {
       raise("cannot grab pointer");
     }
+    (void)XUngrabKeyboard(display, CurrentTime);
     if (GrabSuccess != XGrabKeyboard(display, root,
                                      True,
                                      GrabModeAsync, GrabModeAsync,

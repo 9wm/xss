@@ -26,32 +26,30 @@
 #define TRAILPCT 50
 #define MAXDELTAPML 14
 #define MINDELTAPML 2
+#define COLORDELTA 50
 
 #define nsec (1000000000 / FPS)
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 
-
-void
-sum(short *a, short b, short *v, int m)
-{
-  *a = b + *v;
-  if (*a < 0) {
-    *a *= -1;
-    *v *= -1;
-  } else if (*a > m) {
-    *a = (m*2) - *a;
-    *v *= -1;
+#define sum(a, b, v, m)     \
+  if (b + v < 0) {          \
+    a = -1 * (b + v);       \
+    v *= -1;                \
+  } else if (b + v > m) {   \
+    a = (m*2) - (b + v);    \
+    v *= -1;                \
+  } else {                  \
+    a = b + v;              \
   }
-}
 
 int
 main(int argc, char * const argv[])
 {
-  Display *display;
-  Window   w  = (Window)0;
-  GC       gc = (GC)0;
-  GC       egc = (GC)0;
-  int      i;
+  Display       *display;
+  Window         w      = (Window)0;
+  GC             egc    = (GC)0;
+  XSegment      *lines  = NULL;
+  int            i;
 
   for (i = 1; i < argc; i += 1) {
     if (0 == strcmp(argv[i], "-window-id")) {
@@ -79,10 +77,12 @@ main(int argc, char * const argv[])
   }
 
   try {
-    int      screen;
-    Window   root;
-    XSegment velocity, *lines;
-    int      width, height, nlines;
+    int            screen;
+    Window         root;
+    XSegment       velocity;
+    int            width, height, nlines;
+    unsigned short red, green, blue;
+    int            dred, dgreen, dblue;
 
     if (! (display = XOpenDisplay(NULL))) raise("cannot open display");
     screen = DefaultScreen(display);
@@ -118,10 +118,6 @@ main(int argc, char * const argv[])
     {
       XGCValues values;
 
-      gc = XCreateGC(display, w, 0, &values);
-      if (! XSetForeground(display, gc, WhitePixel(display, screen))) break;
-      if (! XSetBackground(display, gc, BlackPixel(display, screen))) break;
-
       egc = XCreateGC(display, w, 0, &values);
       if (! XSetForeground(display, egc, BlackPixel(display, screen))) break;
       if (! XSetBackground(display, egc, WhitePixel(display, screen))) break;
@@ -147,12 +143,30 @@ main(int argc, char * const argv[])
     lines[0].y1 = (short)(random() % height);
     lines[0].x2 = (short)(random() % width);
     lines[0].y2 = (short)(random() % height);
+    red = (unsigned short)(random() % 65536);
+    green = (unsigned short)(random() % 65536);
+    blue = (unsigned short)(random() % 65536);
+    dred = dgreen = dblue = COLORDELTA;
 
-    i = 0;
-    while (1) {
+    for (i = 0; ;) {
       XSegment        segments[2];
       struct timespec req = {0, nsec};
       int             j   = (i + 1) % nlines;
+      GC              gc;
+      XGCValues       values;
+      XColor          color;
+
+      gc = XCreateGC(display, w, 0, &values);
+      if (! XSetBackground(display, gc, BlackPixel(display, screen))) break;
+      sum(red, red, dred, 65536);
+      sum(green, green, dgreen, 65536);
+      sum(blue, blue, dblue, 65536);
+      color.red = red;
+      color.green = green;
+      color.blue = blue;
+
+      if (! XAllocColor(display, DefaultColormap(display, screen), &color)) break;
+      if (! XSetForeground(display, gc, color.pixel)) break;
 
       (void)memcpy(segments + 0, lines + j, sizeof(XSegment));
       (void)memcpy(segments + 1, lines + j, sizeof(XSegment));
@@ -160,10 +174,10 @@ main(int argc, char * const argv[])
       segments[1].x2 = width - segments[0].x2;
       XDrawSegments(display, (Drawable)w, egc, segments, 2);
 
-      sum(&(lines[j].x1), lines[i].x1, &(velocity.x1), width);
-      sum(&(lines[j].y1), lines[i].y1, &(velocity.y1), height);
-      sum(&(lines[j].x2), lines[i].x2, &(velocity.x2), width);
-      sum(&(lines[j].y2), lines[i].y2, &(velocity.y2), height);
+      sum(lines[j].x1, lines[i].x1, velocity.x1, width);
+      sum(lines[j].y1, lines[i].y1, velocity.y1, height);
+      sum(lines[j].x2, lines[i].x2, velocity.x2, width);
+      sum(lines[j].y2, lines[i].y2, velocity.y2, height);
 
       (void)memcpy(segments + 0, lines + j, sizeof(XSegment));
       (void)memcpy(segments + 1, lines + j, sizeof(XSegment));
@@ -171,6 +185,8 @@ main(int argc, char * const argv[])
       segments[1].x2 = width - segments[0].x2;
       XDrawSegments(display, (Drawable)w, gc, segments, 2);
 
+      if (! XFreeColors(display, DefaultColormap(display, screen), &(color.pixel), 1, 0)) break;
+      (void)XFreeGC(display, gc);
       XSync(display, True);
 
       (void)nanosleep(&req, NULL);
@@ -179,9 +195,12 @@ main(int argc, char * const argv[])
     }
   }
 
+  if (lines) {
+    free(lines);
+  }
+
   if (display) {
-    if (gc) {
-      (void)XFreeGC(display, gc);
+    if (egc) {
       (void)XFreeGC(display, egc);
     }
     (void)XCloseDisplay(display);
