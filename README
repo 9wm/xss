@@ -37,7 +37,7 @@ do anything if the cursor is in the upper-left corner:
     xcursorpos | (read x y; [ $x -lt 20 -a $y -lt 20 ]) && exit 0
     xsswin magic XSS_WINDOW &
     pid=$!
-    xkeygrab | (while [ "$l" != "secret" ]; do read l; done)
+    xkeygrab | (while read l; do [ "$l" != "secret" ] && break; done)
     kill $pid
 
 
