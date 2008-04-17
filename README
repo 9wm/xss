@@ -4,8 +4,8 @@
 program when the X server turns on the built-in screen saver.
 
 `xsswin` makes a full-screen black window and runs some other program,
-passing along the window ID in the environment ($XSS_WINDOW) and
-possibly as an argument (XSS_WINDOW gets replaced with the id).
+passing along the window ID in the environment (`$XSS_WINDOW`) and
+possibly as an argument (`XSS_WINDOW` in argv is replaced with the ID).
 
 `xkeygrab` grabs the keyboard and mouse, and echoes all typed lines to
 stdout.
@@ -13,7 +13,7 @@ stdout.
 `xcursorpos` prints out the x and y coordinates of the cursor.
 
 `magic` is a reimplementation of the "magic" screen saver from After
-Dark.
+Dark.  It probably doesn't work with an 8-bit color pallette.
 
 
 Examples
