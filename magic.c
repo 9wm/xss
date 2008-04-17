@@ -22,25 +22,29 @@
 #include <X11/Xlib.h>
 #include "obj.h"
 
-#define FPS 17
-#define TRAILPCT 50
-#define MAXDELTAPML 14
-#define MINDELTAPML 2
-#define COLORDELTA 50
+#define FPS 17                  /* Frames Per Second */
+#define TRAILPCT 50             /* Percentage of width to cover */
+#define MAXDELTAPML 14          /* Maximum velocity per-mil width */
+#define MINDELTAPML 2           /* Minimum verocity per-mil width */
+#define MINCOLORDELTA 40        /* Minimum color steps per line */
+#define MAXCOLORDELTA 150       /* Maximum color steps per line */
 
 #define nsec (1000000000 / FPS)
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 
 #define sum(a, b, v, m)     \
-  if (b + v < 0) {          \
+  if (b < -v) {             \
     a = -1 * (b + v);       \
     v *= -1;                \
-  } else if (b + v > m) {   \
+  } else if (v > m - b) {   \
     a = (m*2) - (b + v);    \
     v *= -1;                \
   } else {                  \
     a = b + v;              \
   }
+
+#define randint(x) (random() % (x))
+#define rand(l, h) (randint(h-l) + l)
 
 int
 main(int argc, char * const argv[])
@@ -129,24 +133,27 @@ main(int argc, char * const argv[])
       int u, l;
 
       u = width * MAXDELTAPML / 1000;
-      l = width * MINDELTAPML / 1000;
-      velocity.x1 = (short)(random() % (u - l)) + l;
-      velocity.y1 = (short)(random() % (u - l)) + l;
-      velocity.x2 = (short)(random() % (u - l)) + l;
-      velocity.y2 = (short)(random() % (u - l)) + l;
+      l = max(width * MINDELTAPML / 1000, 1);
+      velocity.x1 = (short)rand(l, u);
+      velocity.y1 = (short)rand(l, u);
+      velocity.x2 = (short)rand(l, u);
+      velocity.y2 = (short)rand(l, u);
     }
 
     nlines = (width * TRAILPCT) / (max(velocity.y1, velocity.y2) * 100);
     lines = (XSegment *)calloc(nlines, sizeof(XSegment));
 
-    lines[0].x1 = (short)(random() % width);
-    lines[0].y1 = (short)(random() % height);
-    lines[0].x2 = (short)(random() % width);
-    lines[0].y2 = (short)(random() % height);
-    red = (unsigned short)(random() % 65536);
-    green = (unsigned short)(random() % 65536);
-    blue = (unsigned short)(random() % 65536);
-    dred = dgreen = dblue = COLORDELTA;
+    lines[0].x1 = (short)randint(width);
+    lines[0].y1 = (short)randint(height);
+    lines[0].x2 = (short)randint(width);
+    lines[0].y2 = (short)randint(height);
+
+    red = (unsigned short)randint(65536);
+    green = (unsigned short)randint(65536);
+    blue = (unsigned short)randint(65536);
+    dred = rand(MINCOLORDELTA, MAXCOLORDELTA);
+    dgreen = rand(MINCOLORDELTA, MAXCOLORDELTA);
+    dblue = rand(MINCOLORDELTA, MAXCOLORDELTA);
 
     for (i = 0; ;) {
       XSegment        segments[2];
