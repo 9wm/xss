@@ -58,8 +58,8 @@ main(int argc, char * const argv[])
                       CopyFromParent, InputOutput, CopyFromParent,
                       CWOverrideRedirect | CWBackPixel,
                       &wa);
-    XAllocColor(display, DefaultColormap(display, screen), &black);
     pmap = XCreateBitmapFromData(display, w, "\0", 1, 1);
+    black.pixel = BlackPixel(display, screen);
     invisible = XCreatePixmapCursor(display, pmap, pmap, &black, &black, 0, 0);
     XDefineCursor(display, w, invisible);
     XMapRaised(display, w);

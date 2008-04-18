@@ -40,22 +40,24 @@ main(int argc, char *argv[])
     char          obuf[4096];
     int           obuflen = 0;
     struct pollfd fds[2];
+    int           i;
 
     if (! (display = XOpenDisplay(NULL))) raise("cannot open display");
     root = DefaultRootWindow(display);
-    (void)XUngrabPointer(display, CurrentTime);
-    if (GrabSuccess != XGrabPointer(display, root,
-                                    False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-                                    GrabModeAsync, GrabModeAsync,
-                                    None, None, CurrentTime)) {
-      raise("cannot grab pointer");
-    }
-    (void)XUngrabKeyboard(display, CurrentTime);
-    if (GrabSuccess != XGrabKeyboard(display, root,
-                                     True,
-                                     GrabModeAsync, GrabModeAsync,
-                                     CurrentTime)) {
-      raise("cannot grab keyboard");
+    for (i = 0; i < 3; ) {
+      if ((! (i & 1)) && (GrabSuccess == XGrabKeyboard(display, root,
+                                                       True,
+                                                       GrabModeAsync, GrabModeAsync,
+                                                       CurrentTime))) {
+        i |= 1;
+      }
+      if ((! (i & 2)) && (GrabSuccess == XGrabPointer(display, root,
+                                                      False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+                                                      GrabModeAsync, GrabModeAsync,
+                                                      None, None, CurrentTime))) {
+        i |= 2;
+      }
+      (void)poll(NULL, 0, 100);
     }
 
     fds[0].fd = STDOUT_FILENO;

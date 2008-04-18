@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
 #include <X11/extensions/scrnsaver.h>
 
 #include "obj.h"
@@ -47,18 +48,31 @@ main(int argc, char *argv[])
 
   try {
     int    ss_event, ss_error;
+    int    screen;
     XEvent event;
+    Window root;
 
     if (! (display = XOpenDisplay(NULL))) raise("cannot open display");
+    screen = DefaultScreen(display);
     if (! XScreenSaverQueryExtension(display, &ss_event, &ss_error)) {
       raise("X server does not support MIT-SCREEN-SAVER extension.");
     }
-    XScreenSaverSelectInput(display, DefaultRootWindow(display), ScreenSaverNotifyMask);
+    if (! XScreenSaverRegister(display, screen, (XID)getpid(), XA_INTEGER)) {
+      raise("cannot register screen saver, is another one already running?");
+    }
+    root = RootWindow(display, screen);
+    XScreenSaverSelectInput(display, root, ScreenSaverNotifyMask);
     while (! XNextEvent(display, &event)) {
       if (ss_event == event.type) {
         XScreenSaverNotifyEvent *sevent = (XScreenSaverNotifyEvent *)&event;
 
         if (ScreenSaverOn == sevent->state) {
+#if 0
+          XScreenSaverInfo info;
+          if (XScreenSaverQueryInfo(display, (Drawable)root, &info)) {
+            XLowerWindow(display, info.window);
+          }
+#endif
           if (! child) {
             child = fork();
             if (0 == child) {
