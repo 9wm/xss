@@ -62,17 +62,30 @@ main(int argc, char *argv[])
     }
     root = RootWindow(display, screen);
     XScreenSaverSelectInput(display, root, ScreenSaverNotifyMask);
+
+    /* Tell X to make the screen saver window 1 pixel by 1 pixel and off
+       the visible area, since we'll be creating our own.  I suspect jwz
+       is just blowing smoke. */
+    {
+      XSetWindowAttributes attr;
+
+      attr.background_pixel = BlackPixel(display, screen);
+      XScreenSaverSetAttributes(display, root,
+                                -1, -1,
+                                1, 1,
+                                0,
+                                CopyFromParent, CopyFromParent,
+                                CopyFromParent,
+                                CWBackPixel,
+                                &attr);
+    }
+
+
     while (! XNextEvent(display, &event)) {
       if (ss_event == event.type) {
         XScreenSaverNotifyEvent *sevent = (XScreenSaverNotifyEvent *)&event;
 
         if (ScreenSaverOn == sevent->state) {
-#if 0
-          XScreenSaverInfo info;
-          if (XScreenSaverQueryInfo(display, (Drawable)root, &info)) {
-            XLowerWindow(display, info.window);
-          }
-#endif
           if (! child) {
             child = fork();
             if (0 == child) {
