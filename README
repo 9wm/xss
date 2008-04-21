@@ -1,7 +1,19 @@
 == xss ==
 
+[xss](http://woozle.org/~neale/src/xss) is a suite of X screensaver
+utilities.  With them, you can use shell scripts to glue the tools
+together to build your own screen saver and/or locker.  You can use any
+`xscreensaver` hack instead of the built-in `magic` hack, or you can use
+`xlock` if you prefer.
+
+
+The programs
+------------
+
 `xss` uses the decades-old MIT-SCREEN-SAVER extension to launch a
-program when the X server turns on the built-in screen saver.
+program when the X server turns on the built-in screen saver.  Unlike
+`xautolock`, `xss` blocks until the X server says it's time to do
+something.
 
 `xsswin` makes a full-screen black window and runs some other program,
 passing along the window ID in the environment (`$XSS_WINDOW`) and

@@ -49,30 +49,34 @@
 int
 main(int argc, char * const argv[])
 {
-  Display       *display;
-  Window         w      = (Window)0;
-  GC             egc    = (GC)0;
-  XSegment      *lines  = NULL;
-  int            i;
+  Display  *display;
+  Window    w      = (Window)0;
+  GC        egc    = (GC)0;
+  XSegment *lines  = NULL;
+  char     *winstr = NULL;
+  int       i;
 
   for (i = 1; i < argc; i += 1) {
     if (0 == strcmp(argv[i], "-window-id")) {
       /* For compatibility reasons, just ignore */
-    } else if (w) {
+    } else if (winstr) {
       w = (Window)-1;
       break;
     } else {
-      char *end;
+      winstr = argv[i];
+    }
+  }
+  if (! winstr) winstr = getenv("XSS_WINDOW");
+  if (winstr) {
+    char *end;
 
-      if (argv[i][0] == '0' && argv[i][1] == 'x') {
-        w = (Window)strtol(argv[i] + 2, &end, 16);
-      } else {
-        w = (Window)strtol(argv[i], &end, 10);
-      }
-      if ('\0' != *end) {
-        w = (Window)-1;
-        break;
-      }
+    if (winstr[0] == '0' && winstr[1] == 'x') {
+      w = (Window)strtol(winstr + 2, &end, 16);
+    } else {
+      w = (Window)strtol(winstr, &end, 10);
+    }
+    if ('\0' != *end) {
+      w = (Window)-1;
     }
   }
   if ((Window)-1 == w) {

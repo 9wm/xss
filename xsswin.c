@@ -36,12 +36,14 @@ main(int argc, char * const argv[])
   }
 
   try {
-    int                  screen;
-    Cursor               invisible;
-    XSetWindowAttributes wa;
-    Window               root;
-    XColor               black;
-    int                  child;
+    int                   screen;
+    Cursor                invisible;
+    XSetWindowAttributes  wa;
+    Window                root;
+    XColor                black;
+    int                   i;
+    char                 *nargv[argc + 1];
+    char                  id[50];
 
     zero(wa);
     zero(black);
@@ -55,7 +57,7 @@ main(int argc, char * const argv[])
     w = XCreateWindow(display, root,
                       0, 0,
                       DisplayWidth(display, screen), DisplayHeight(display, screen), 0,
-                      CopyFromParent, InputOutput, CopyFromParent,
+                      CopyFromParent, CopyFromParent, CopyFromParent,
                       CWOverrideRedirect | CWBackPixel,
                       &wa);
     pmap = XCreateBitmapFromData(display, w, "\0", 1, 1);
@@ -65,29 +67,18 @@ main(int argc, char * const argv[])
     XMapRaised(display, w);
     XSync(display, False);
 
-    child = fork();
-    if (0 == child) {
-      char *nargv[argc + 1];
-      char id[50];
-      int i;
-
-      (void)snprintf(id, sizeof(id), "0x%lx", (unsigned long)w);
-      (void)setenv("XSS_WINDOW", id, 1);
-      for (i = 0; i < argc; i += 1) {
-        if (0 == strcmp(argv[i], "XSS_WINDOW")) {
-          nargv[i] = id;
-        } else {
-          nargv[i] = argv[i];
-        }
+    (void)snprintf(id, sizeof(id), "0x%lx", (unsigned long)w);
+    (void)setenv("XSS_WINDOW", id, 1);
+    for (i = 0; i < argc; i += 1) {
+      if (0 == strcmp(argv[i], "XSS_WINDOW")) {
+        nargv[i] = id;
+      } else {
+        nargv[i] = argv[i];
       }
-      nargv[argc] = NULL;
-      (void)execvp(nargv[1], nargv + 1);
-      perror("exec");
-      exit(1);
     }
-
-    /* XXX: maybe important to also watch for X events? */
-    (void)waitpid(-1, NULL, 0);
+    nargv[argc] = NULL;
+    (void)execvp(nargv[1], nargv + 1);
+    perror("exec");
   }
 
   if (display) {
