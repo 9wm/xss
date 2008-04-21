@@ -70,8 +70,10 @@ won't lock if the cursor's at the top of the screen.
 Download
 --------
 
-You can download a [tarball of the latest
-commit](http://woozle.org/~neale/repos/?p=xss;a=snapshot) or use git:
+You can [browse the source](http://woozle.org/~neale/repos/?p=xss),
+download a [tarball of the latest
+commit](http://woozle.org/~neale/repos/?p=xss;a=snapshot), or clone the
+git repository:
 
     git clone http://woozle.org/~neale/repos/xss/
 
@@ -79,20 +81,18 @@ commit](http://woozle.org/~neale/repos/?p=xss;a=snapshot) or use git:
 Bugs
 ----
 
-* Sometimes xss quits launching anything.  I suspect it's not getting
+* Sometimes `xss` quits launching anything.  I suspect it's not getting
   SIGCHLD for some reason.
-
+* `magic` is probably abusing the X protocol, and may buy the farm after
+  a few hours.
 
 History
 -------
 
 AIX apparently had something also called `xss` which did almost exactly
-what mine does, but with command-line options.
-
-`magic` is similar to the `qix` hack from xscreensaver and xlock.
-
-I'm not aware of anything else like the rest of the programs, which is
-why I wrote them.
+what mine does, but with command-line options.  `magic` is similar to
+the `qix` hack from xscreensaver and xlock.  I'm not aware of anything
+else like the rest of the programs, which is why I wrote them.
 
 I lifted some code from `beforelight` from the X11 distribution, and
 from `slock` from [suckless.org](http://suckless.org/).  Both have a

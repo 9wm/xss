@@ -36,9 +36,9 @@
   if (b < -v) {             \
     a = -1 * (b + v);       \
     v *= -1;                \
-  } else if (v > m - b) {   \
-    a = (m*2) - (b + v);    \
+  } else if (m - b <= v) {  \
     v *= -1;                \
+    a = m - (m - b) + v;    \
   } else {                  \
     a = b + v;              \
   }
