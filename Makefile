@@ -1,8 +1,14 @@
+BINDIR = $(HOME)/bin
 CFLAGS = -Wall
 LDLIBS = -lX11
 
-all: xss xsswin xcursorpos xkeygrab magic
+BINARIES = xss xsswin xcursorpos xkeygrab xbell magic
+
+all: $(BINARIES)
+
+install: $(BINARIES)
+	cp $(BINARIES) $(BINDIR)
 
 xss: LDLIBS += -lXss
 
-.PHONY: all
+.PHONY: all install

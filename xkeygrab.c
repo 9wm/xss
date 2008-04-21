@@ -40,34 +40,34 @@ main(int argc, char *argv[])
     char          obuf[4096];
     int           obuflen = 0;
     struct pollfd fds[2];
-    int           i;
 
     if (! (display = XOpenDisplay(NULL))) raise("cannot open display");
     root = DefaultRootWindow(display);
-    for (i = 0; i < 3; ) {
-      if ((! (i & 1)) && (GrabSuccess == XGrabKeyboard(display, root,
-                                                       True,
-                                                       GrabModeAsync, GrabModeAsync,
-                                                       CurrentTime))) {
-        i |= 1;
-      }
-      if ((! (i & 2)) && (GrabSuccess == XGrabPointer(display, root,
-                                                      False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-                                                      GrabModeAsync, GrabModeAsync,
-                                                      None, None, CurrentTime))) {
-        i |= 2;
-      }
-      (void)poll(NULL, 0, 100);
-    }
 
     fds[0].fd = STDOUT_FILENO;
     fds[0].events = 0;
     fds[1].fd = ConnectionNumber(display);
     fds[1].events = POLLIN;
     while (1) {
+      int tograb = 3;
       int ret;
 
-      ret = poll(fds, 2, -1);
+      if (tograb) {
+        if ((tograb & 1) && (GrabSuccess == XGrabKeyboard(display, root,
+                                                          True,
+                                                          GrabModeAsync, GrabModeAsync,
+                                                          CurrentTime))) {
+          tograb |= 1;
+        }
+        if ((tograb & 2) && (GrabSuccess == XGrabPointer(display, root,
+                                                         False, ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+                                                         GrabModeAsync, GrabModeAsync,
+                                                         None, None, CurrentTime))) {
+          tograb |= 2;
+        }
+      }
+
+      ret = poll(fds, 2, (tograb?100:-1));
 
       if (fds[0].revents & POLLERR) {
         break;

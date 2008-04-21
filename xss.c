@@ -63,9 +63,7 @@ main(int argc, char *argv[])
     root = RootWindow(display, screen);
     XScreenSaverSelectInput(display, root, ScreenSaverNotifyMask);
 
-    /* Tell X to make the screen saver window 1 pixel by 1 pixel and off
-       the visible area, since we'll be creating our own.  I suspect jwz
-       is just blowing smoke. */
+    /* Tell X to show its provided window off the screen.  We make our own. */
     {
       XSetWindowAttributes attr;
 
