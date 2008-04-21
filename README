@@ -42,6 +42,10 @@ Run like `xautolock`:
 
     xss xlock -mode qix &
 
+Just run a screen saver, don't lock
+
+    xss -w /usr/lib/xscreensaver/deco -window-id XSS_WINDOW
+
 Launch a program called "screenlock" when you're idle:
 
     xss screenlock

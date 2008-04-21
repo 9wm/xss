@@ -37,16 +37,11 @@ main(int argc, char * const argv[])
 
   try {
     int                   screen;
-    Cursor                invisible;
     XSetWindowAttributes  wa;
     Window                root;
-    XColor                black;
     int                   i;
     char                 *nargv[argc + 1];
     char                  id[50];
-
-    zero(wa);
-    zero(black);
 
     if (! (display = XOpenDisplay(NULL))) raise("cannot open display");
     screen = DefaultScreen(display);
@@ -54,16 +49,21 @@ main(int argc, char * const argv[])
 
     wa.override_redirect = 1;
     wa.background_pixel = BlackPixel(display, screen);
+    {
+      Pixmap               pmap;
+      XColor               black;
+
+      pmap = XCreateBitmapFromData(display, root, "\0", 1, 1);
+      black.pixel = BlackPixel(display, screen);
+      wa.cursor = XCreatePixmapCursor(display, pmap, pmap, &black, &black, 0, 0);
+      if (! (XFreePixmap(display, pmap))) break;
+    }
     w = XCreateWindow(display, root,
                       0, 0,
                       DisplayWidth(display, screen), DisplayHeight(display, screen), 0,
                       CopyFromParent, CopyFromParent, CopyFromParent,
-                      CWOverrideRedirect | CWBackPixel,
+                      CWOverrideRedirect | CWBackPixel | CWCursor,
                       &wa);
-    pmap = XCreateBitmapFromData(display, w, "\0", 1, 1);
-    black.pixel = BlackPixel(display, screen);
-    invisible = XCreatePixmapCursor(display, pmap, pmap, &black, &black, 0, 0);
-    XDefineCursor(display, w, invisible);
     XMapRaised(display, w);
     XSync(display, False);
 
@@ -77,8 +77,14 @@ main(int argc, char * const argv[])
       }
     }
     nargv[argc] = NULL;
-    (void)execvp(nargv[1], nargv + 1);
-    perror("exec");
+
+    i = fork();
+    if (0 == i) {
+      (void)execvp(nargv[1], nargv + 1);
+      perror("exec");
+      return 1;
+    }
+    (void)waitpid(-1, NULL, 0);
   }
 
   if (display) {

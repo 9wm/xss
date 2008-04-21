@@ -38,19 +38,29 @@ sigchld(int signum)
 int
 main(int argc, char *argv[])
 {
-  Display *display = NULL;
+  Display *display   = NULL;
+  int      screen;
+  int      bigwindow = 0;
 
-  if (argc < 2) {
-    (void)fprintf(stderr, "Usage: %s PROGRAM [ARGUMENT ...]\n", argv[0]);
+  if ((argc > 1) && (0 == (strcmp(argv[1], "-w")))) {
+    bigwindow = 1;
+  }
+  if (argc - bigwindow < 2) {
+    (void)fprintf(stderr, "Usage: %s [-w] PROGRAM [ARGUMENT ...]\n", argv[0]);
+    (void)fprintf(stderr, "\n");
+    (void)fprintf(stderr, "-w    Map X server window, export $XSS_WINDOW.  This window\n");
+    (void)fprintf(stderr, "      will be unmapped by any keypress or mouse movement.\n");
     return 64;                  /* EX_USAGE */
   }
   signal(SIGCHLD, sigchld);
 
   try {
-    int    ss_event, ss_error;
-    int    screen;
-    XEvent event;
-    Window root;
+    int     ss_event, ss_error;
+    XEvent  event;
+    Window  root;
+    char   *nargv[argc+1];
+    char    id[50];
+    int     i;
 
     if (! (display = XOpenDisplay(NULL))) raise("cannot open display");
     screen = DefaultScreen(display);
@@ -63,21 +73,39 @@ main(int argc, char *argv[])
     root = RootWindow(display, screen);
     XScreenSaverSelectInput(display, root, ScreenSaverNotifyMask);
 
-    /* Tell X to show its provided window off the screen.  We make our own. */
     {
-      XSetWindowAttributes attr;
+      XSetWindowAttributes wa;
+      XScreenSaverInfo     info;
+      Pixmap               pmap;
+      XColor               black;
 
-      attr.background_pixel = BlackPixel(display, screen);
+      pmap = XCreateBitmapFromData(display, root, "\0", 1, 1);
+      black.pixel = BlackPixel(display, screen);
+      wa.cursor = XCreatePixmapCursor(display, pmap, pmap, &black, &black, 0, 0);
+      wa.background_pixel = BlackPixel(display, screen);
+      if (! (XFreePixmap(display, pmap))) break;
       XScreenSaverSetAttributes(display, root,
-                                -1, -1,
-                                1, 1,
+                                bigwindow?0:-1, bigwindow?0:-1,
+                                bigwindow?DisplayWidth(display, screen):1,
+                                bigwindow?DisplayHeight(display, screen):1,
                                 0,
                                 CopyFromParent, CopyFromParent,
                                 CopyFromParent,
-                                CWBackPixel,
-                                &attr);
+                                CWBackPixel | CWCursor,
+                                &wa);
+      XScreenSaverQueryInfo(display, (Drawable)root, &info);
+      (void)snprintf(id, sizeof(id), "0x%lx", (unsigned long)info.window);
+      (void)setenv("XSS_WINDOW", id, 1);
     }
 
+    for (i = 0; i < argc; i += 1) {
+      if (bigwindow && (0 == strcmp(argv[i], "XSS_WINDOW"))) {
+        nargv[i] = id;
+      } else {
+        nargv[i] = argv[i];
+      }
+    }
+    nargv[argc] = NULL;
 
     while (! XNextEvent(display, &event)) {
       if (ss_event == event.type) {
@@ -87,10 +115,11 @@ main(int argc, char *argv[])
           if (! child) {
             child = fork();
             if (0 == child) {
-              (void)execvp(argv[1], argv + 1);
+              (void)execvp(nargv[1+bigwindow], nargv+1+bigwindow);
               perror("exec");
               exit(1);
             }
+          } else {
           }
         }
       }
@@ -98,6 +127,7 @@ main(int argc, char *argv[])
   } while (0);
 
   if (display) {
+    (void)XScreenSaverUnregister(display, screen);
     (void)XCloseDisplay(display);
   }
 
