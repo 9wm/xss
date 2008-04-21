@@ -34,8 +34,8 @@
 
 #define sum(a, b, v, m)     \
   if (b < -v) {             \
-    a = -1 * (b + v);       \
     v *= -1;                \
+    a = v - b;              \
   } else if (m - b <= v) {  \
     v *= -1;                \
     a = m - (m - b) + v;    \
