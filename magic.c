@@ -167,17 +167,17 @@ main(int argc, char * const argv[])
       XGCValues       values;
       XColor          color;
 
-      gc = XCreateGC(display, w, 0, &values);
-      if (! XSetBackground(display, gc, BlackPixel(display, screen))) break;
       sum(red, red, dred, 65536);
       sum(green, green, dgreen, 65536);
       sum(blue, blue, dblue, 65536);
       color.red = red;
       color.green = green;
       color.blue = blue;
-
       if (! XAllocColor(display, DefaultColormap(display, screen), &color)) break;
-      if (! XSetForeground(display, gc, color.pixel)) break;
+
+      values.background = BlackPixel(display, screen);
+      values.foreground = color.pixel;
+      gc = XCreateGC(display, w, GCBackground | GCForeground, &values);
 
       (void)memcpy(segments + 0, lines + j, sizeof(XSegment));
       (void)memcpy(segments + 1, lines + j, sizeof(XSegment));
@@ -196,8 +196,10 @@ main(int argc, char * const argv[])
       segments[1].x2 = width - segments[0].x2;
       XDrawSegments(display, (Drawable)w, gc, segments, 2);
 
-      if (! XFreeColors(display, DefaultColormap(display, screen), &(color.pixel), 1, 0)) break;
+      /* Freeing the color while the line is still visible may look
+         wonky at 8bpp */
       (void)XFreeGC(display, gc);
+      if (! XFreeColors(display, DefaultColormap(display, screen), &(color.pixel), 1, 0)) break;
       XSync(display, True);
 
       (void)nanosleep(&req, NULL);

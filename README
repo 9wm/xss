@@ -1,8 +1,8 @@
 == xss ==
 
 [xss](http://woozle.org/~neale/src/xss) is a suite of X screensaver
-utilities.  With them, you can use shell scripts to glue the tools
-together to build your own screen saver and/or locker.  You can use any
+utilities.  You can use shell scripts to glue the tools together to
+build your own screen saver and/or locker.  You can use any
 `xscreensaver` hack instead of the built-in `magic` hack, or you can use
 `xlock` if you prefer.
 
@@ -27,7 +27,7 @@ stdout.
 `xbell` sounds the X server's bell.
 
 `magic` is a reimplementation of the "magic" screen saver from After
-Dark.  It probably doesn't work with an 8-bit color pallette.
+Dark.  It might look weird at 8bpp.
 
 
 Examples
@@ -35,20 +35,19 @@ Examples
 
 Tell the X server to launch the screen saver after 90 seconds idle:
 
-    xset s 90
-
+    $ xset s 90
 
 Run like `xautolock`:
 
-    xss xlock -mode qix &
+    $ xss xlock -mode qix &
 
 Just run a screen saver, don't lock
 
-    xss -w /usr/lib/xscreensaver/deco -window-id XSS_WINDOW
+    $ xss -w /usr/lib/xscreensaver/deco -window-id XSS_WINDOW &
 
 Launch a program called "screenlock" when you're idle:
 
-    xss screenlock
+    $ xss screenlock &
 
 An simple "screenlock" script:
 
@@ -93,14 +92,6 @@ git repository:
 
     git clone http://woozle.org/~neale/repos/xss/
 
-
-Bugs
-----
-
-* Sometimes `xss` quits launching anything.  I suspect it's not getting
-  SIGCHLD for some reason.
-* `magic` is probably abusing the X protocol, and may buy the farm after
-  a few hours.
 
 History
 -------
