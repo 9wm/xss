@@ -9,6 +9,9 @@ all: $(BINARIES)
 install: $(BINARIES)
 	cp $(BINARIES) $(BINDIR)
 
+clean:
+	rm -f $(BINARIES)
+
 xss: LDLIBS += -lXss
 
-.PHONY: all install
+.PHONY: all install clean
