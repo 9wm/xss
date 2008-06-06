@@ -107,6 +107,10 @@ main(int argc, char *argv[])
               }
               break;
           }
+          if (obuflen == sizeof(obuf)) {
+            (void)write(STDOUT_FILENO, obuf, obuflen);
+            obuflen = 0;
+          }
         }
       }
     }
