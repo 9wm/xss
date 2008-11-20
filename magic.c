@@ -58,7 +58,7 @@ main(int argc, char * const argv[])
 
   for (i = 1; i < argc; i += 1) {
     if (0 == strcmp(argv[i], "-window-id")) {
-      /* For compatibility reasons, just ignore */
+      /* For compatibility with xscreensaver.  We just ignore it. */
     } else if (winstr) {
       w = (Window)-1;
       break;
@@ -81,20 +81,24 @@ main(int argc, char * const argv[])
   }
   if ((Window)-1 == w) {
     (void)fprintf(stderr, "Usage: %s [WINDOW_ID]\n", argv[0]);
-    return 64;                /* EX_USAGE */
+    return 64;                  /* EX_USAGE */
+  }
+
+  if (! (display = XOpenDisplay(NULL))) {
+    (void)fprintf(stderr, "cannot open display");
+    return 69;                  /* EX_UNAVAILABLE */
   }
 
   try {
-    int            screen;
-    Window         root;
+    int            screen = DefaultScreen(display);
+    Window         root   = RootWindow(display, screen);
+    Colormap       cmap   = DefaultColormap(display, screen);
     XSegment       velocity;
     int            width, height, nlines;
-    unsigned short red, green, blue;
+    unsigned short red, green, blue; /* because color.red is reset to the color you got */
     int            dred, dgreen, dblue;
-
-    if (! (display = XOpenDisplay(NULL))) raise("cannot open display");
-    screen = DefaultScreen(display);
-    root = RootWindow(display, screen);
+    GC             gc;
+    XColor         color;
 
     if (w) {
       XWindowAttributes wa;
@@ -104,11 +108,8 @@ main(int argc, char * const argv[])
       height = wa.height;
     } else {
       XSetWindowAttributes wa;
-      XColor black;
-
 
       zero(wa);
-      zero(black);
 
       wa.override_redirect = 1;
       wa.background_pixel = BlackPixel(display, screen);
@@ -121,14 +122,6 @@ main(int argc, char * const argv[])
                         CWBackPixel,
                         &wa);
       XMapWindow(display, w);
-    }
-
-    {
-      XGCValues values;
-
-      egc = XCreateGC(display, w, 0, &values);
-      if (! XSetForeground(display, egc, BlackPixel(display, screen))) break;
-      if (! XSetBackground(display, egc, WhitePixel(display, screen))) break;
     }
 
     srandom((unsigned int)time(NULL));
@@ -152,60 +145,71 @@ main(int argc, char * const argv[])
     lines[0].x2 = (short)randint(width);
     lines[0].y2 = (short)randint(height);
 
-    red = (unsigned short)randint(65536);
-    green = (unsigned short)randint(65536);
-    blue = (unsigned short)randint(65536);
-    dred = rand(MINCOLORDELTA, MAXCOLORDELTA);
-    dgreen = rand(MINCOLORDELTA, MAXCOLORDELTA);
-    dblue = rand(MINCOLORDELTA, MAXCOLORDELTA);
+
+    /* Allocate graphics contexts */
+    {
+      XGCValues      values;
+
+      values.background = values.foreground = BlackPixel(display, screen);
+      egc = XCreateGC(display, w, GCBackground | GCForeground, &values);
+
+      red = color.red = (unsigned short)randint(65536);
+      green = color.green = (unsigned short)randint(65536);
+      blue = color.blue = (unsigned short)randint(65536);
+      dred = rand(MINCOLORDELTA, MAXCOLORDELTA);
+      dgreen = rand(MINCOLORDELTA, MAXCOLORDELTA);
+      dblue = rand(MINCOLORDELTA, MAXCOLORDELTA);
+
+      if (! XAllocColor(display, cmap, &color)) break;
+      values.foreground = color.pixel;
+      gc = XCreateGC(display, w, GCBackground | GCForeground, &values);
+    }
 
     for (i = 0; ;) {
       XSegment        segments[2];
       struct timespec req = {0, nsec};
       int             j   = (i + 1) % nlines;
-      GC              gc;
-      XGCValues       values;
-      XColor          color;
 
-      sum(red, red, dred, 65536);
-      sum(green, green, dgreen, 65536);
-      sum(blue, blue, dblue, 65536);
-      color.red = red;
-      color.green = green;
-      color.blue = blue;
-      if (! XAllocColor(display, DefaultColormap(display, screen), &color)) break;
-
-      values.background = BlackPixel(display, screen);
-      values.foreground = color.pixel;
-      gc = XCreateGC(display, w, GCBackground | GCForeground, &values);
-
+      /* Erase old line */
       (void)memcpy(segments + 0, lines + j, sizeof(XSegment));
       (void)memcpy(segments + 1, lines + j, sizeof(XSegment));
       segments[1].x1 = width - segments[0].x1;
       segments[1].x2 = width - segments[0].x2;
-      XDrawSegments(display, (Drawable)w, egc, segments, 2);
+      (void)XDrawSegments(display, (Drawable)w, egc, segments, 2);
 
+      /* Calculate new line */
       sum(lines[j].x1, lines[i].x1, velocity.x1, width);
       sum(lines[j].y1, lines[i].y1, velocity.y1, height);
       sum(lines[j].x2, lines[i].x2, velocity.x2, width);
       sum(lines[j].y2, lines[i].y2, velocity.y2, height);
 
+      /* Draw new line */
       (void)memcpy(segments + 0, lines + j, sizeof(XSegment));
       (void)memcpy(segments + 1, lines + j, sizeof(XSegment));
       segments[1].x1 = width - segments[0].x1;
       segments[1].x2 = width - segments[0].x2;
-      XDrawSegments(display, (Drawable)w, gc, segments, 2);
+      (void)XDrawSegments(display, (Drawable)w, gc, segments, 2);
 
-      /* Freeing the color while the line is still visible may look
-         wonky at 8bpp */
-      (void)XFreeGC(display, gc);
-      if (! XFreeColors(display, DefaultColormap(display, screen), &(color.pixel), 1, 0)) break;
+      /* Change color */
+      {
+        unsigned long pixel = color.pixel;
+
+        sum(color.red = red, red, dred, 65536);
+        sum(color.green = green, green, dgreen, 65536);
+        sum(color.blue = blue, blue, dblue, 65536);
+
+        if (! XAllocColor(display, cmap, &color)) break;
+        if (! XSetForeground(display, gc, color.pixel)) break;
+        if (! XFreeColors(display, cmap, &pixel, 1, 0)) break;
+      }
       XSync(display, True);
 
       (void)nanosleep(&req, NULL);
 
       i = j;
     }
+
+    (void)XFreeGC(display, gc);
   }
 
   if (lines) {

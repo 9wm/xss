@@ -1,6 +1,7 @@
-BINDIR = $(HOME)/bin
+HOSTTYPE = $(shell uname -m)
+BINDIR = $(HOME)/bin/$(HOSTTYPE)
 CFLAGS = -Wall
-LDLIBS = -lX11
+LDLIBS = -L/usr/X11R6/lib -lX11
 
 BINARIES = xss xsswin xcursorpos xkeygrab xbell magic
 
