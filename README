@@ -85,12 +85,12 @@ won't lock if the cursor's at the top of the screen.
 Download
 --------
 
-You can [browse the source](http://woozle.org/~neale/repos/?p=xss),
+You can [browse the source](http://woozle.org/~neale/gitweb.cgi?p=xss),
 download a [tarball of the latest
-commit](http://woozle.org/~neale/repos/?p=xss;a=snapshot), or clone the
-git repository:
+commit](http://woozle.org/~neale/gitweb.cgi?p=xss;a=snapshot), or clone
+the git repository:
 
-    git clone http://woozle.org/~neale/repos/xss/
+    git clone http://woozle.org/~neale/projects/xss
 
 
 History

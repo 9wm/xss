@@ -32,19 +32,20 @@
 #define nsec (1000000000 / FPS)
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 
+
+#define randint(x) (random() % (x))
+#define rand(l, h) (randint(h-l) + l)
+
 #define sum(a, b, v, m)     \
   if (b < -v) {             \
     v *= -1;                \
     a = v - b;              \
   } else if (m - b <= v) {  \
     v *= -1;                \
-    a = m - (m - b) + v;    \
+    a = v + b;              \
   } else {                  \
-    a = b + v;              \
+    a = v + b;              \
   }
-
-#define randint(x) (random() % (x))
-#define rand(l, h) (randint(h-l) + l)
 
 int
 main(int argc, char * const argv[])
