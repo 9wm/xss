@@ -50,7 +50,6 @@ main(int argc, char * const argv[])
     wa.override_redirect = 1;
     wa.background_pixel = BlackPixel(display, screen);
     {
-      Pixmap               pmap;
       XColor               black;
 
       pmap = XCreateBitmapFromData(display, root, "\0", 1, 1);

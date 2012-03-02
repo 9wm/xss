@@ -3,7 +3,7 @@ BINDIR ?= $(HOME)/bin/$(HOSTTYPE)
 CFLAGS = -Wall
 LDLIBS = -L/usr/X11R6/lib -lX11
 
-BINARIES = xss xsswin xcursorpos xkeygrab xbell magic
+BINARIES = xss xsswin xcursorpos xkeygrab xbell magic xnolock
 
 all: $(BINARIES)
 
@@ -13,6 +13,6 @@ install: $(BINARIES)
 clean:
 	rm -f $(BINARIES)
 
-xss: LDLIBS += -lXss
+xss xnolock: LDLIBS += -lXss
 
 .PHONY: all install clean
