@@ -1,6 +1,7 @@
-== xss ==
+xss
+===
 
-[xss](http://woozle.org/~neale/src/xss) is a suite of X screensaver
+[xss](http://github.com/9wm/xss) is a suite of X screensaver
 utilities.  You can use shell scripts to glue the tools together to
 build your own screen saver and/or locker.  You can use any
 `xscreensaver` hack instead of the built-in `magic` hack, or you can use
@@ -80,17 +81,6 @@ won't lock if the cursor's at the top of the screen.
         )
     kill $xsswin
     [ $playing ] && mpc --no-status play
-
-
-Download
---------
-
-You can [browse the source](http://woozle.org/~neale/gitweb.cgi?p=xss),
-download a [tarball of the latest
-commit](http://woozle.org/~neale/gitweb.cgi?p=xss;a=snapshot), or clone
-the git repository:
-
-    git clone http://woozle.org/~neale/projects/xss
 
 
 History
